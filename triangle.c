@@ -7,36 +7,58 @@ void drawTriangle(SDL_Renderer *renderer, const vec2 *p1, const vec2 *p2, const 
 }
 
 void fillTriangle(SDL_Renderer *renderer, const vec2 *p1, const vec2 *p2, const vec2 *p3) {
-	vec2 top, mid, bot;
-
-	if (p1->y < p2->y)
-		top = *p1;
-	else
-		top = *p2;
-	if (p3->y < top.y) {
-		mid = top;
-		top = *p3;
+	vec2 left, mid, right;
+	if (p1->x < p2->x) {
+		if (p1->x < p3->x) {
+			left = *p1;
+			if (p2->x < p3->x) {
+				mid = *p2;
+				right = *p3;
+			} else {
+				mid = *p3;
+				right = *p2;
+			}
+		} else {
+			left = *p3;
+			mid = *p1;
+			right = *p2;
+		}
 	} else {
-		mid = *p3;
+		if (p2->x < p3->x) {
+			left = *p2;
+			if (p1->x < p3->x) {
+				mid = *p1;
+				right = *p3;
+			} else {
+				mid = *p3;
+				right = *p1;
+			}
+		} else {
+			left = *p3;
+			mid = *p2;
+			right = *p1;
+		}
 	}
-	bot.x = p1->x + p2->x + p3->x - top.x - mid.x;
-	bot.y = p1->y + p2->y + p3->y - top.y - mid.y;
-
-	float m1 = (mid.x - top.x) / (mid.y - top.y);
-	float m2 = (bot.x - top.x) / (bot.y - top.y);
-	float m3 = (bot.x - mid.x) / (bot.y - mid.y);
-	float b1 = top.x - m1 * top.y;
-	float b2 = top.x - m2 * top.y;
-	float b3 = mid.x - m3 * mid.y;
-
-	for (int y = top.y; y <= mid.y; y++) {
-		int x1 = m1 * y + b1;
-		int x2 = m2 * y + b2;
-		SDL_RenderDrawLine(renderer, x1, y, x2, y);
+	float m1 = (left.y - right.y) / (left.x - right.x);
+	float m2 = (left.y - mid.y) / (left.x - mid.x);
+	float m3 = (mid.y - right.y) / (mid.x - right.x);
+	float b1 = left.y - m1 * left.x;
+	float b2 = left.y - m2 * left.x;
+	float b3 = mid.y - m3 * mid.x;
+	float top = fminf(fminf(left.y, mid.y), right.y);
+	float bottom = fmaxf(fmaxf(left.y, mid.y), right.y);
+	for (int x = ceilf(left.x); x < mid.x; x++) {
+		float y1 = m1 * x + b1;
+		float y2 = m2 * x + b2;
+		y1 = fminf(fmaxf(y1, top), bottom);
+		y2 = fminf(fmaxf(y2, top), bottom);
+		SDL_RenderDrawLine(renderer, x, y1, x, y2);
 	}
-	for (int y = mid.y; y <= bot.y; y++) {
-		int x1 = m2 * y + b2;
-		int x2 = m3 * y + b3;
-		SDL_RenderDrawLine(renderer, x1, y, x2, y);
+	for (int x = ceilf(mid.x); x < right.x; x++) {
+		float y1 = m1 * x + b1;
+		float y2 = m3 * x + b3;
+		y1 = fminf(fmaxf(y1, top), bottom);
+		y2 = fminf(fmaxf(y2, top), bottom);
+		SDL_RenderDrawLine(renderer, x, y1, x, y2);
 	}
 }

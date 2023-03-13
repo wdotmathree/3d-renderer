@@ -7,7 +7,10 @@ void mat4x4_translate(float m[4][4], float x, float y, float z) {
 		{0, 0, 1, z},
 		{0, 0, 0, 1},
 	};
-	mat4x4_mul(m, m, tmp);
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++)
+			m[i][j] = tmp[i][j];
+	}
 }
 
 void mat4x4_scale(float m[4][4], float x, float y, float z) {
@@ -17,7 +20,10 @@ void mat4x4_scale(float m[4][4], float x, float y, float z) {
 		{0, 0, z, 0},
 		{0, 0, 0, 1},
 	};
-	mat4x4_mul(m, m, tmp);
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++)
+			m[i][j] = tmp[i][j];
+	}
 }
 
 void mat4x4_rotate(float m[4][4], float x, float y, float z) {
@@ -35,9 +41,9 @@ void mat4x4_rotate(float m[4][4], float x, float y, float z) {
 		float c = cos(x);
 		float s = sin(x);
 		float tmp2[4][4] = {
-			{c, 0, s, 0},
-			{0, 1, 0, 0},
-			{-s, 0, c, 0},
+			{1, 0, 0, 0},
+			{0, c, -s, 0},
+			{0, s, c, 0},
 			{0, 0, 0, 1},
 		};
 		mat4x4_mul(tmp, tmp, tmp2);
@@ -46,9 +52,9 @@ void mat4x4_rotate(float m[4][4], float x, float y, float z) {
 		float c = cos(y);
 		float s = sin(y);
 		float tmp2[4][4] = {
-			{c, -s, 0, 0},
-			{s, c, 0, 0},
-			{0, 0, 1, 0},
+			{c, 0, s, 0},
+			{0, 1, 0, 0},
+			{-s, 0, c, 0},
 			{0, 0, 0, 1},
 		};
 		mat4x4_mul(tmp, tmp, tmp2);
@@ -57,25 +63,29 @@ void mat4x4_rotate(float m[4][4], float x, float y, float z) {
 		float c = cos(z);
 		float s = sin(z);
 		float tmp2[4][4] = {
-			{1, 0, 0, 0},
-			{0, c, -s, 0},
-			{0, s, c, 0},
+			{c, -s, 0, 0},
+			{s, c, 0, 0},
+			{0, 0, 1, 0},
 			{0, 0, 0, 1},
 		};
 		mat4x4_mul(tmp, tmp, tmp2);
 	}
-	mat4x4_mul(m, m, tmp);
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++)
+			m[i][j] = tmp[i][j];
+	}
 }
 
 void mat4x4_perspective(float m[4][4], float fov, float a, float znear, float zfar) {
 	float f = 1 / tan(fov / 2 / 180 * M_PI);
-	
+
 	float q = zfar / (zfar - znear);
 	memset(m, 0, sizeof(float[4][4]));
 	m[0][0] = a * f;
 	m[1][1] = f;
 	m[2][2] = q;
 	m[2][3] = -znear * q;
+	m[3][3] = 1;
 }
 
 void vec4_toscreen(vec2 *out, const vec4 *v, int w, int h) {
