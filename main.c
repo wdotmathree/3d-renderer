@@ -4,64 +4,71 @@
 #include <SDL.h>
 #include <stdio.h>
 
-// void sort(vec4 *arr, int start, int end) {
-// 	// quicksort in decending order
-// 	if (start >= end)
-// 		return;
-// 	vec4 temp[3];
-// 	float pivot = arr[start].z;
-// 	int i = start + 3;
-// 	int j = end;
-// 	while (i <= j) {
-// 		while (i <= end && arr[i].z >= pivot)
-// 			i += 3;
-// 		while (j > start && arr[j].z < pivot)
-// 			j -= 3;
-// 		if (i < j) {
-// 			vec4 temp[3];
-// 			temp[0] = arr[i];
-// 			temp[1] = arr[i + 1];
-// 			temp[2] = arr[i + 2];
-// 			arr[i] = arr[j];
-// 			arr[i + 1] = arr[j + 1];
-// 			arr[i + 2] = arr[j + 2];
-// 			arr[j] = temp[0];
-// 			arr[j + 1] = temp[1];
-// 			arr[j + 2] = temp[2];
-// 		}
-// 	}
-// 	temp[0] = arr[start];
-// 	temp[1] = arr[start + 1];
-// 	temp[2] = arr[start + 2];
-// 	arr[start] = arr[j];
-// 	arr[start + 1] = arr[j + 1];
-// 	arr[start + 2] = arr[j + 2];
-// 	arr[j] = temp[0];
-// 	arr[j + 1] = temp[1];
-// 	arr[j + 2] = temp[2];
-// 	sort(arr, start, j - 3);
-// 	sort(arr, j + 3, end);
-// }
-
-void sort(vec4 *arr, int len) {
-	len *= 3;
-	for (int i = 0; i < len; i += 3) {
-		for (int j = i; j > 0; j -= 3) {
-			if (arr[j].z > arr[j - 3].z) {
-				vec4 temp[3];
-				temp[0] = arr[j];
-				temp[1] = arr[j + 1];
-				temp[2] = arr[j + 2];
-				arr[j] = arr[j - 3];
-				arr[j + 1] = arr[j - 2];
-				arr[j + 2] = arr[j - 1];
-				arr[j - 3] = temp[0];
-				arr[j - 2] = temp[1];
-				arr[j - 1] = temp[2];
-			}
+void sort(vec4 *arr, int start, int end) {
+	// quicksort in decending order
+	if (start >= end)
+		return;
+	vec4 temp[3];
+	float pivot = arr[start].z;
+	int i = start + 3;
+	int j = end;
+	while (i <= j) {
+		while (i <= end && arr[i].z >= pivot)
+			i += 3;
+		while (j > start && arr[j].z < pivot)
+			j -= 3;
+		if (i < j) {
+			vec4 temp[3];
+			temp[0] = arr[i];
+			temp[1] = arr[i + 1];
+			temp[2] = arr[i + 2];
+			arr[i] = arr[j];
+			arr[i + 1] = arr[j + 1];
+			arr[i + 2] = arr[j + 2];
+			arr[j] = temp[0];
+			arr[j + 1] = temp[1];
+			arr[j + 2] = temp[2];
 		}
 	}
+	temp[0] = arr[start];
+	temp[1] = arr[start + 1];
+	temp[2] = arr[start + 2];
+	arr[start] = arr[j];
+	arr[start + 1] = arr[j + 1];
+	arr[start + 2] = arr[j + 2];
+	arr[j] = temp[0];
+	arr[j + 1] = temp[1];
+	arr[j + 2] = temp[2];
+	sort(arr, start, j - 3);
+	sort(arr, j + 3, end);
 }
+
+// void sort(vec4 *arr, int len) {
+// 	len *= 3;
+// 	for (int i = 0; i < len; i += 3) {
+// 		for (int j = i; j > 0; j -= 3) {
+// 			if (arr[j].z > arr[j - 3].z) {
+// 				vec4 temp[3];
+// 				temp[0] = arr[j];
+// 				temp[1] = arr[j + 1];
+// 				temp[2] = arr[j + 2];
+// 				arr[j] = arr[j - 3];
+// 				arr[j + 1] = arr[j - 2];
+// 				arr[j + 2] = arr[j - 1];
+// 				arr[j - 3] = temp[0];
+// 				arr[j - 2] = temp[1];
+// 				arr[j - 1] = temp[2];
+// 			}
+// 		}
+// 	}
+// }
+
+#define numVerticies 107477
+#define numTriangles 214312
+
+vec4 verticies[numVerticies];
+vec4 triangles[numTriangles][3];
+vec4 newtriangles[numTriangles][3];
 
 int main() {
 	// init sdl
@@ -71,7 +78,6 @@ int main() {
 	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 	SDL_RenderClear(renderer);
 	// make a shape
-	vec4 verticies[576];
 	FILE *f = fopen("thing.obj", "r");
 	int i = 0;
 	while (1) {
@@ -86,10 +92,8 @@ int main() {
 			break;
 		}
 	}
-	// make a list of triangles
-	vec4 triangles[1152][3];
 	i = 0;
-	while (i < 1152) {
+	while (i < numTriangles) {
 		int a, b, c;
 		char x;
 		fscanf(f, "%c", &x);
@@ -114,29 +118,28 @@ int main() {
 		// rotate the shape
 		mat4x4_rotate(m2, 0, t / 2, 0);
 		// rotate the shape
-		mat4x4_rotate(m, -40, 0, 0);
+		mat4x4_rotate(m, 210, 0, 0);
 		mat4x4_mul(m2, m2, m);
 		t++;
-		// mat4x4_scale(m, 0.5, 0.5, 0.5);
-		// mat4x4_mul(m2, m, m2);
+		mat4x4_scale(m, 1./30., 1./30., 1./30.);
+		mat4x4_mul(m2, m, m2);
 		// translate the shape
-		mat4x4_translate(m, 0, 0, 4);
+		mat4x4_translate(m, 0, .5, 4);
 		mat4x4_mul(m2, m, m2);
 		// get the projection matrix
 		mat4x4_perspective(m, 90, 1, 1, 10);
 		// multiply the matrices
 		mat4x4_mul(m, m, m2);
 		// apply the transformations
-		vec4 newtriangles[1152][3];
-		for (int i = 0; i < 1152; i++) {
+		for (int i = 0; i < numTriangles; i++) {
 			mat4x4_mul_vec4(&newtriangles[i][0], m, &triangles[i][0]);
 			mat4x4_mul_vec4(&newtriangles[i][1], m, &triangles[i][1]);
 			mat4x4_mul_vec4(&newtriangles[i][2], m, &triangles[i][2]);
 		}
 		// sort the triangles
-		// sort(newtriangles, 0, 1149);
-		sort(newtriangles, 1152);
-		for (int i = 0; i < 1152; i++) {
+		sort(newtriangles, 0, numTriangles * 3 - 3);
+		// sort(newtriangles, 214312 * 3);
+		for (int i = 0; i < numTriangles; i++) {
 			vec4 p1, p2, p3;
 			p1 = newtriangles[i][0];
 			p2 = newtriangles[i][1];
@@ -156,7 +159,7 @@ int main() {
 			vec4_toscreen(&p2s, &p2, 1000, 1000);
 			vec4_toscreen(&p3s, &p3, 1000, 1000);
 			// calculate lighting
-			vec3 light = (vec3){2, 2, -2};
+			vec3 light = (vec3){0, 0.5, -1};
 			vec3_normalize(&light);
 			float intensity = -vec3_dot(&n, &light);
 			if (intensity < 0)
@@ -165,7 +168,7 @@ int main() {
 			fillTriangle(renderer, &p1s, &p2s, &p3s);
 			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 			// SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-			drawTriangle(renderer, &p1s, &p2s, &p3s);
+			// drawTriangle(renderer, &p1s, &p2s, &p3s);
 		}
 		SDL_RenderPresent(renderer);
 		if (SDL_PollEvent(&e)) {
